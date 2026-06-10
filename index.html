@@ -87,6 +87,7 @@
     .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px 14px;margin-bottom:8px;display:flex;gap:11px;align-items:flex-start;box-shadow:var(--shadow);transition:box-shadow .15s}
     .card:hover{box-shadow:var(--shadow-md)}
     .card.urgent{border-left:3px solid var(--red)}
+    .card.importante{background:var(--blue-s);border-color:rgba(37,99,235,0.2)}
     .card.done{opacity:.4}
     .card.done .card-title{text-decoration:line-through}
     .check{width:20px;height:20px;min-width:20px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;flex-shrink:0;transition:all .15s}
@@ -808,7 +809,7 @@ function cardHTML(t,showCliente=true){
   const tmBadge=t.tema?`<span class="chip c-otro">${t.tema}</span>`:'';
   const bloqBadge=t.bloqueo?`<span class="chip c-bloq">${svg(ICO.warn)}Bloqueado</span>`:'';
   const isUrgent=t.fecha&&t.fecha<=todayStr()&&!t.done;
-  return`<div class="card ${t.done?'done':''} ${isUrgent?'urgent':''}">
+  return`<div class="card ${t.done?'done':''} ${isUrgent?'urgent':''} ${t.importante&&!t.done?'importante':''}">
     <div class="check ${t.done?'done':''}" onclick="toggleDone('${t.id}')">${svg(ICO.check)}</div>
     <div class="card-body">
       <div class="card-title">${t.titulo}</div>
@@ -1047,7 +1048,7 @@ function taskCardHTML(t){
   const dateBadge=dl?`<span class="chip c-date ${dl.cls}">${dl.txt}</span>`:'';
   const bloqBadge=t.bloqueo?`<span class="chip c-bloq">${svg(ICO.warn)}</span>`:'';
   const isUrgent=t.fecha&&t.fecha<=todayStr()&&!t.done;
-  return`<div class="task ${t.done?'done-task':''} ${isUrgent?'urgent':''}">
+  return`<div class="task ${t.done?'done-task':''} ${isUrgent?'urgent':''}" style="${t.importante&&!t.done?'background:var(--blue-s);border-color:rgba(37,99,235,0.2)':''}">
     <div class="check ${t.done?'done':''}" onclick="toggleDone('${t.id}')">${svg(ICO.check)}</div>
     <div class="task-body">
       <div class="task-title">${t.titulo}</div>
