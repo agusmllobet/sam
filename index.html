@@ -87,7 +87,7 @@
     .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px 14px;margin-bottom:8px;display:flex;gap:11px;align-items:flex-start;box-shadow:var(--shadow);transition:box-shadow .15s}
     .card:hover{box-shadow:var(--shadow-md)}
     .card.urgent{border-left:3px solid var(--red)}
-    .card.importante{background:var(--blue-s);border-color:rgba(37,99,235,0.2)}
+    .card.importante{background:#fffbeb;border-color:rgba(217,119,6,0.25)}
     .card.done{opacity:.4}
     .card.done .card-title{text-decoration:line-through}
     .check{width:20px;height:20px;min-width:20px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;flex-shrink:0;transition:all .15s}
@@ -314,7 +314,13 @@
     <div class="detail-hdr">
       <button class="back-btn" onclick="volverClientes()"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
       <div class="d-avatar" id="d-avatar"></div>
-      <div><div class="d-title" id="d-title"></div><div class="d-sub" id="d-sub"></div></div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="d-title" id="d-title"></div>
+          <button id="d-sub-edit" onclick="editarNombreCliente()" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:11px;color:var(--text2);cursor:pointer;align-items:center;gap:3px">✏️ Editar</button>
+        </div>
+        <div class="d-sub" id="d-sub"></div>
+      </div>
     </div>
     <div class="scroll" id="detail-lista"></div>
   </div>
@@ -379,18 +385,24 @@
     </div>
     <div class="field"><label>Ícono</label>
       <div style="display:flex;flex-wrap:wrap;gap:8px" id="nc-icons">
-        <button class="nc-ico-btn active" onclick="setNcIcon(this,'building')" data-icon="building" title="Edificio">🏢</button>
-        <button class="nc-ico-btn" onclick="setNcIcon(this,'train')" data-icon="train" title="Tren">🚂</button>
-        <button class="nc-ico-btn" onclick="setNcIcon(this,'plane')" data-icon="plane" title="Avión">✈️</button>
-        <button class="nc-ico-btn" onclick="setNcIcon(this,'truck')" data-icon="truck" title="Camión">🚛</button>
-        <button class="nc-ico-btn" onclick="setNcIcon(this,'water')" data-icon="water" title="Agua">💧</button>
-        <button class="nc-ico-btn" onclick="setNcIcon(this,'zap')" data-icon="zap" title="Energía">⚡</button>
-        <button class="nc-ico-btn" onclick="setNcIcon(this,'road')" data-icon="road" title="Ruta">🛣️</button>
-        <button class="nc-ico-btn" onclick="setNcIcon(this,'cow')" data-icon="cow" title="Ganadería">🐄</button>
-        <button class="nc-ico-btn" onclick="setNcIcon(this,'cloud')" data-icon="cloud" title="Nube/Tech">☁️</button>
-        <button class="nc-ico-btn" onclick="setNcIcon(this,'server')" data-icon="server" title="Servidor">🖥️</button>
-        <button class="nc-ico-btn" onclick="setNcIcon(this,'energy')" data-icon="energy" title="Termoeléctrica">🔋</button>
-        <button class="nc-ico-btn" onclick="setNcIcon(this,'chart')" data-icon="chart" title="Finanzas">📊</button>
+        <button class="nc-ico-btn active" onclick="setNcIcon(this,'🏢')" title="Edificio">🏢</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'🚂')" title="Tren">🚂</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'✈️')" title="Avión">✈️</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'🚛')" title="Camión">🚛</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'💧')" title="Agua">💧</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'⚡')" title="Energía">⚡</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'🛣️')" title="Ruta">🛣️</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'🐄')" title="Ganadería">🐄</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'☁️')" title="Nube/Tech">☁️</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'🖥️')" title="Servidor">🖥️</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'🔋')" title="Energía">🔋</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'📊')" title="Finanzas">📊</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'🏭')" title="Industria">🏭</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'🌾')" title="Agro">🌾</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'🏗️')" title="Construcción">🏗️</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'💊')" title="Salud">💊</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'🏦')" title="Finanzas">🏦</button>
+        <button class="nc-ico-btn" onclick="setNcIcon(this,'🛒')" title="Retail">🛒</button>
       </div>
     </div>
     <div class="field"><label>Color</label>
@@ -528,7 +540,7 @@ const TIPOS={
   llamada:{label:'Llamada',icon:'phone',cls:'c-llamada'},
   mail:   {label:'Mail',   icon:'mail', cls:'c-mail'},
   licit:  {label:'Licitación',icon:'doc',cls:'c-licit'},
-  pres:   {label:'Presentación',icon:'chart',cls:'c-pres'},
+  pres:   {label:'Presentación',emoji:'📊',cls:'c-pres'},
   reunion:{label:'Reunión',icon:'meeting',cls:'c-reunion'},
   costing:{label:'Costing',icon:'dollar',cls:'c-costing'},
   propuesta:{label:'Propuesta',icon:'send',cls:'c-propuesta'},
@@ -542,26 +554,26 @@ function tipoChip(tipo){
 
 // ── CLIENT CONFIG ──
 const CLIENT_CFG={
-  BCyL:      {color:'#2563eb',bg:'#eff6ff',icon:'train',   tipo:'cliente'},
-  AySA:      {color:'#0891b2',bg:'#ecfeff',icon:'water',   tipo:'cliente'},
-  PAMI:      {color:'#7c3aed',bg:'#f5f3ff',icon:'building',tipo:'cliente'},
-  AUSA:      {color:'#059669',bg:'#ecfdf5',icon:'road',    tipo:'cliente'},
-  ABSA:      {color:'#0284c7',bg:'#e0f2fe',icon:'water',   tipo:'cliente'},
-  ASSA:      {color:'#0e7490',bg:'#cffafe',icon:'water',   tipo:'cliente'},
-  Cammesa:   {color:'#d97706',bg:'#fffbeb',icon:'zap',     tipo:'cliente'},
-  CIMET:     {color:'#db2777',bg:'#fdf2f8',icon:'server',  tipo:'cliente'},
-  Daimler:   {color:'#4f46e5',bg:'#eef2ff',icon:'truck',   tipo:'cliente'},
-  EANA:      {color:'#059669',bg:'#ecfdf5',icon:'plane',   tipo:'cliente'},
-  ENARSA:    {color:'#b45309',bg:'#fef3c7',icon:'energy',  tipo:'cliente'},
-  GCBA:      {color:'#2563eb',bg:'#eff6ff',icon:'building',tipo:'cliente'},
-  T6:        {color:'#dc2626',bg:'#fef2f2',icon:'building',tipo:'cliente'},
-  TSM:       {color:'#16a34a',bg:'#f0fdf4',icon:'zap',     tipo:'cliente'},
-  SAP:       {color:'#2563eb',bg:'#eff6ff',icon:'cloud',   tipo:'partner'},
-  'DC Latam':{color:'#7c3aed',bg:'#f5f3ff',icon:'server',  tipo:'partner'},
-  ArreBeef:  {color:'#dc2626',bg:'#fef2f2',icon:'cow',     tipo:'cliente'},
-  Concentrix:{color:'#2563eb',bg:'#eff6ff',icon:'building',tipo:'interno'},
-  ACA:       {color:'#16a34a',bg:'#f0fdf4',icon:'cow',     tipo:'cliente'},
-  IRSA:      {color:'#d97706',bg:'#fffbeb',icon:'building',tipo:'cliente'},
+  BCyL:      {color:'#2563eb',bg:'#eff6ff',emoji:'🚂',   tipo:'cliente'},
+  AySA:      {color:'#0891b2',bg:'#ecfeff',emoji:'💧',   tipo:'cliente'},
+  PAMI:      {color:'#7c3aed',bg:'#f5f3ff',emoji:'🏢',tipo:'cliente'},
+  AUSA:      {color:'#059669',bg:'#ecfdf5',emoji:'🛣️',    tipo:'cliente'},
+  ABSA:      {color:'#0284c7',bg:'#e0f2fe',emoji:'💧',   tipo:'cliente'},
+  ASSA:      {color:'#0e7490',bg:'#cffafe',emoji:'💧',   tipo:'cliente'},
+  Cammesa:   {color:'#d97706',bg:'#fffbeb',emoji:'⚡',     tipo:'cliente'},
+  CIMET:     {color:'#db2777',bg:'#fdf2f8',emoji:'🖥️',  tipo:'cliente'},
+  Daimler:   {color:'#4f46e5',bg:'#eef2ff',emoji:'🚛',   tipo:'cliente'},
+  EANA:      {color:'#059669',bg:'#ecfdf5',emoji:'✈️',   tipo:'cliente'},
+  ENARSA:    {color:'#b45309',bg:'#fef3c7',emoji:'🔋',  tipo:'cliente'},
+  GCBA:      {color:'#2563eb',bg:'#eff6ff',emoji:'🏢',tipo:'cliente'},
+  T6:        {color:'#dc2626',bg:'#fef2f2',emoji:'🏢',tipo:'cliente'},
+  TSM:       {color:'#16a34a',bg:'#f0fdf4',emoji:'⚡',     tipo:'cliente'},
+  SAP:       {color:'#2563eb',bg:'#eff6ff',emoji:'☁️',   tipo:'partner'},
+  'DC Latam':{color:'#7c3aed',bg:'#f5f3ff',emoji:'🖥️',  tipo:'partner'},
+  ArreBeef:  {color:'#dc2626',bg:'#fef2f2',emoji:'🐄',     tipo:'cliente'},
+  Concentrix:{color:'#2563eb',bg:'#eff6ff',emoji:'🏢',tipo:'interno'},
+  ACA:       {color:'#16a34a',bg:'#f0fdf4',emoji:'🐄',     tipo:'cliente'},
+  IRSA:      {color:'#d97706',bg:'#fffbeb',emoji:'🏢',tipo:'cliente'},
 };
 
 // ── SEED ──
@@ -649,7 +661,7 @@ const SEED_TM=[
 // ── STATE ──
 let tareas=[],temas=[],comentarios={},clientes_cfg={...CLIENT_CFG};
 let tab='todo',sortMode='fecha',editId=null,currentCliente=null,temaCollapsed={};
-let newClienteTipo='cliente',newClienteColor='#2563eb',newClienteBg='#eff6ff',newClienteIcon='building';
+let newClienteTipo='cliente',newClienteColor='#2563eb',newClienteBg='#eff6ff',newClienteIcon='🏢';
 let newTemaEstado='abierto',newTemaCliente=null;
 const KEY_CL='agustina_clientes_v1';
 
@@ -673,7 +685,7 @@ async function loadAll(){
   cs.docs.forEach(d=>{const x=d.data();if(!comentarios[x.temaId])comentarios[x.temaId]=[];comentarios[x.temaId].push({id:d.id,...x})});
   Object.keys(comentarios).forEach(k=>comentarios[k].sort((a,b)=>b.fecha>a.fecha?1:-1));
   // Load custom clients
-  cls.docs.forEach(d=>{const x=d.data();if(x.nombre)clientes_cfg[x.nombre]={color:x.color,bg:x.bg,icon:x.icon||'building',tipo:x.tipo||'cliente'}});
+  cls.docs.forEach(d=>{const x=d.data();if(x.nombre)clientes_cfg[x.nombre]={color:x.color,bg:x.bg,emoji:x.emoji||x.icon||'🏢',tipo:x.tipo||'cliente'}});
   updateCounts();render();updateDatalists();
   // initialize toolbar visibility for default tab (todo)
   document.getElementById('toolbar-todo').style.display='flex';
@@ -839,9 +851,7 @@ function renderFoco(lista,items){
   Object.keys(grupos).sort().forEach(k=>{
     const cfg=getCfg(k);
     html+=`<div style="display:flex;align-items:center;gap:8px;padding:14px 2px 6px">
-      <div style="width:28px;height:28px;border-radius:8px;background:${cfg.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <svg viewBox="0 0 24 24" style="stroke:${cfg.color};width:14px;height:14px;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round">${ICO[cfg.icon]||ICO.building}</svg>
-      </div>
+      <div style="width:28px;height:28px;border-radius:8px;background:${cfg.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px">${cfg.emoji||'🏢'}</div>
       <span style="font-size:13px;font-weight:700;color:var(--text)">${k}</span>
     </div>`;
     grupos[k].forEach(t=>html+=cardHTML(t,false));
@@ -930,13 +940,12 @@ window.saveAgComment=async function(taskId,texto){
   render();
 }
 
-function getCfg(nombre){return clientes_cfg[nombre]||{color:'#2563eb',bg:'#eff6ff',icon:'building',tipo:'cliente'}}
+function getCfg(nombre){return clientes_cfg[nombre]||{color:'#2563eb',bg:'#eff6ff',emoji:'🏢',tipo:'cliente'}}
 
 function tileIcon(nombre){
   const cfg=getCfg(nombre);
-  const logo=LOGOS[nombre];
-  if(logo)return`<div class="tile-logo" style="background:${cfg.bg}"><img src="${logo}" alt="${nombre}" onerror="this.parentElement.innerHTML='<svg viewBox=\\'0 0 24 24\\' style=\\'stroke:${cfg.color};width:20px;height:20px;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round\\'>${ICO[cfg.icon]||ICO.building}</svg>'"/></div>`;
-  return`<div class="tile-logo" style="background:${cfg.bg}"><svg viewBox="0 0 24 24" style="stroke:${cfg.color};width:20px;height:20px;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round">${ICO[cfg.icon]||ICO.building}</svg></div>`;
+  const em=cfg.emoji||'🏢';
+  return`<div class="tile-logo" style="background:${cfg.bg};font-size:22px">${em}</div>`;
 }
 
 function renderClientes(lista){
@@ -965,10 +974,10 @@ function renderClientes(lista){
       const isCustom=!CLIENT_CFG[c]; // only show delete for custom clients
       html+=`<div class="tile" style="--tc:${cfg.color};--tb:${cfg.bg}" onclick="abrirCliente('${c}')">
         ${pend?`<div class="tile-badge">${pend}</div>`:''}
-        ${isCustom?`<button onclick="event.stopPropagation();eliminarCliente('${c}')" style="position:absolute;top:8px;left:8px;background:var(--red-s);border:none;border-radius:6px;color:var(--red);width:22px;height:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px">✕</button>`:''}
         ${tileIcon(c)}
         <div class="tile-name">${c}</div>
         <div class="tile-meta">${tAb} tema${tAb!==1?'s':''} abierto${tAb!==1?'s':''}</div>
+        ${isCustom?`<button onclick="event.stopPropagation();eliminarCliente('${c}')" style="position:absolute;bottom:8px;right:8px;background:var(--red-s);border:none;border-radius:6px;color:var(--red);width:24px;height:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px">🗑</button>`:''}
       </div>`;
     });
     html+='</div>';
@@ -984,8 +993,11 @@ window.abrirCliente=function(nombre){
   const cfg=getCfg(nombre);
   const av=document.getElementById('d-avatar');
   av.style.background=cfg.bg;
-  av.innerHTML=`<svg viewBox="0 0 24 24" style="stroke:${cfg.color};width:20px;height:20px;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round">${ICO[cfg.icon]||ICO.building}</svg>`;
+  av.style.fontSize='20px';
+  av.textContent=cfg.emoji||'🏢';
   document.getElementById('d-title').textContent=nombre;
+  const isCustom=!CLIENT_CFG[nombre];
+  document.getElementById('d-sub-edit').style.display=isCustom?'inline-flex':'none';
   renderDetail(nombre);
 }
 window.volverClientes=function(){
@@ -1048,7 +1060,7 @@ function taskCardHTML(t){
   const dateBadge=dl?`<span class="chip c-date ${dl.cls}">${dl.txt}</span>`:'';
   const bloqBadge=t.bloqueo?`<span class="chip c-bloq">${svg(ICO.warn)}</span>`:'';
   const isUrgent=t.fecha&&t.fecha<=todayStr()&&!t.done;
-  return`<div class="task ${t.done?'done-task':''} ${isUrgent?'urgent':''}" style="${t.importante&&!t.done?'background:var(--blue-s);border-color:rgba(37,99,235,0.2)':''}">
+  return`<div class="task ${t.done?'done-task':''} ${isUrgent?'urgent':''}" style="${t.importante&&!t.done?'background:#fffbeb;border-color:rgba(217,119,6,0.25)':''}">
     <div class="check ${t.done?'done':''}" onclick="toggleDone('${t.id}')">${svg(ICO.check)}</div>
     <div class="task-body">
       <div class="task-title">${t.titulo}</div>
@@ -1152,6 +1164,27 @@ window.setNcColor=function(el,color,bg){
   document.querySelectorAll('#nc-colors .seg-btn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
 }
+window.editarNombreCliente=async function(){
+  const viejo=currentCliente;
+  const nuevo=prompt('Nuevo nombre:',viejo);
+  if(!nuevo||nuevo===viejo)return;
+  const cfg=clientes_cfg[viejo];
+  // Save new, delete old
+  await setDoc(doc(db,'clientes',nuevo),{nombre:nuevo,...cfg});
+  try{await deleteDoc(doc(db,'clientes',viejo));}catch(e){}
+  // Update all tareas and temas
+  const batch1=tareas.filter(t=>t.cliente===viejo);
+  for(const t of batch1){t.cliente=nuevo;await setDoc(doc(db,'tareas',t.id),t,{merge:true});}
+  const batch2=temas.filter(t=>t.cliente===viejo);
+  for(const t of batch2){t.cliente=nuevo;await setDoc(doc(db,'temas',t.id),t,{merge:true});}
+  clientes_cfg[nuevo]=cfg;
+  delete clientes_cfg[viejo];
+  currentCliente=nuevo;
+  document.getElementById('d-title').textContent=nuevo;
+  renderDetail(nuevo);
+  render();
+}
+
 window.eliminarCliente=async function(nombre){
   if(!confirm(`¿Eliminar "${nombre}"? Esto no borra sus tareas.`))return;
   try{await deleteDoc(doc(db,'clientes',nombre));}catch(e){}
@@ -1162,7 +1195,7 @@ window.eliminarCliente=async function(nombre){
 window.guardarCliente=async function(){
   const nombre=document.getElementById('nc-nombre').value.trim();
   if(!nombre)return;
-  const cfg={color:newClienteColor,bg:newClienteBg,icon:newClienteIcon,tipo:newClienteTipo};
+  const cfg={color:newClienteColor,bg:newClienteBg,emoji:newClienteIcon,tipo:newClienteTipo};
   clientes_cfg[nombre]=cfg;
   try{
     await setDoc(doc(db,'clientes',nombre),{nombre,...cfg});
