@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-  <meta name="apple-mobile-web-app-title" content="Mis Cuentas"/>
+  <meta name="apple-mobile-web-app-title" content="SAM"/>
   <meta name="theme-color" content="#ffffff"/>
-  <title>Mis Cuentas</title>
+  <title>SAM</title>
   <link rel="manifest" href="manifest.json"/>
   <link rel="apple-touch-icon" href="icons/icon-192.png"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
@@ -276,7 +276,7 @@
   <div id="main-view" style="display:flex;flex-direction:column;height:100%">
     <div class="hdr">
       <div class="hdr-top">
-        <div><div class="hdr-title">Mis Cuentas</div><div class="hdr-sub" id="hdr-sub">Cargando…</div></div>
+        <div><div class="hdr-title">SAM</div><div class="hdr-sub" id="hdr-sub">Cargando…</div></div>
         <div class="hdr-actions">
           <button class="ico-btn" onclick="toggleSearch()" title="Buscar">🔍</button>
           <button class="ico-btn" onclick="abrirNuevoCliente()" title="Nuevo cliente">🏢</button>
@@ -787,6 +787,13 @@ async function deleteTarea(id){
   updateCounts();render();updateDatalists();
   if(currentCliente)renderDetail(currentCliente);
 }
+window.toggleBloqueo=async function(id){
+  const t=tareas.find(t=>t.id===id);if(!t)return;
+  t.bloqueo_resuelto=!t.bloqueo_resuelto;
+  await sb('PATCH','tareas',{bloqueo_resuelto:t.bloqueo_resuelto},`?id=eq.${id}`);
+  render();
+  if(currentCliente)renderDetail(currentCliente);
+}
 window.toggleImportante=async function(id){
   const t=tareas.find(t=>t.id===id);if(!t)return;
   t.importante=!t.importante;
@@ -796,6 +803,11 @@ window.toggleImportante=async function(id){
 }
 window.toggleDone=async function(id){
   const t=tareas.find(t=>t.id===id);if(!t)return;
+  // Check if blocked and not resolved
+  if(!t.done && t.bloqueo && !t.bloqueo_resuelto){
+    alert('⚠️ Esta tarea está bloqueada. Primero marcá el bloqueo como resuelto.');
+    return;
+  }
   t.done=!t.done;
   await sb('PATCH','tareas',{done:t.done},`?id=eq.${id}`);
   updateCounts();render();
@@ -910,7 +922,10 @@ function cardHTML(t,showCliente=true){
       <div class="card-title">${t.titulo}</div>
       <div class="card-chips">${tipoChip(t.tipo)}${clBadge}${tmBadge}${bloqBadge}${dateBadge}</div>
       ${t.nota?`<div class="card-note">${t.nota}</div>`:''}
-      ${t.bloqueo?`<div class="card-blocked">${svg(ICO.warn)}${t.bloqueo}</div>`:''}
+      ${t.bloqueo?`<div class="card-blocked" style="${t.bloqueo_resuelto?'opacity:.5;text-decoration:line-through':''}">
+        <button onclick="event.stopPropagation();toggleBloqueo('${t.id}')" style="background:${t.bloqueo_resuelto?'var(--green)':'transparent'};border:1.5px solid ${t.bloqueo_resuelto?'var(--green)':'var(--red)'};border-radius:50%;width:16px;height:16px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:4px;font-size:9px;color:${t.bloqueo_resuelto?'#fff':'var(--red)'}">${t.bloqueo_resuelto?'✓':''}</button>
+        ${svg(ICO.warn)}${t.bloqueo}
+      </div>`:''}
     </div>
     <div class="card-acts">
       <button class="tiny ${t.importante?'importante-on':''}" onclick="toggleImportante('${t.id}')" title="Importante" style="${t.importante?'color:var(--blue)':''}">${svg(t.importante?ICO.eye:ICO.eyeoff)}</button>
@@ -1118,6 +1133,7 @@ function temaCardHTML(tema,todasTareas){
       <span class="tema-status ${SC[tema.estado]||'s-abierto'}">${SL[tema.estado]||tema.estado}</span>
       <span class="tema-name">${tema.nombre}</span>
       ${pend?`<span class="tema-pend">${pend} pend.</span>`:''}
+      <button onclick="event.stopPropagation();editarTema('${tema.id}','${tema.nombre.replace(/'/g,"\'")}')" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:2px 4px;font-size:13px;border-radius:4px" title="Editar tema">✏️</button>
       <span class="tema-chev ${isOpen?'open':''}">${svg(ICO.plus,'style="transform:rotate(45deg)"')}</span>
     </div>
     <div class="tema-body ${isOpen?'open':''}">
@@ -1148,12 +1164,31 @@ function taskCardHTML(t){
       <div class="task-title">${t.titulo}</div>
       <div class="task-chips">${tipoChip(t.tipo)}${bloqBadge}${dateBadge}</div>
       ${t.nota?`<div class="task-note">${t.nota}</div>`:''}
-      ${t.bloqueo?`<div class="task-blocked">${svg(ICO.warn)}${t.bloqueo}</div>`:''}
+      ${t.bloqueo?`<div class="task-blocked" style="${t.bloqueo_resuelto?'opacity:.5;text-decoration:line-through':''}">
+        <button onclick="event.stopPropagation();toggleBloqueo('${t.id}')" style="background:${t.bloqueo_resuelto?'var(--green)':'transparent'};border:1.5px solid ${t.bloqueo_resuelto?'var(--green)':'var(--red)'};border-radius:50%;width:16px;height:16px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:4px;font-size:9px;color:${t.bloqueo_resuelto?'#fff':'var(--red)'}">${t.bloqueo_resuelto?'✓':''}</button>
+        ${svg(ICO.warn)}${t.bloqueo}
+      </div>`:''}
     </div>
     <div class="task-acts">
       <button class="tiny" onclick="toggleImportante('${t.id}')" style="${t.importante?'color:var(--blue)':''}" title="Importante">${svg(t.importante?ICO.eye:ICO.eyeoff)}</button>
       ${tinyBtn('edit',`editarTarea('${t.id}')`)}${tinyBtn('trash',`confirmarBorrar('${t.id}')}`)}</div>
   </div>`;
+}
+
+window.editarTema=function(id, nombre){
+  const tema = temas.find(t=>t.id===id);
+  if(!tema)return;
+  const nuevo = prompt('Nombre del tema:', nombre);
+  if(!nuevo || nuevo===nombre)return;
+  sb('PATCH','temas',{nombre:nuevo},`?id=eq.${id}`).then(()=>{
+    tema.nombre=nuevo;
+    // update tareas with this tema
+    tareas.filter(t=>t.tema===nombre&&t.cliente===tema.cliente).forEach(t=>{
+      t.tema=nuevo;
+      sb('PATCH','tareas',{tema:nuevo},`?id=eq.${t.id}`);
+    });
+    renderDetail(currentCliente);
+  });
 }
 
 window.toggleTema=function(id){
