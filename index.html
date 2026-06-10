@@ -482,7 +482,7 @@ const ICO={
   dollar:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>',
   send:'<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>',
   pin:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>',
-  train:'<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 4v4h6V4M8 16h.01M16 16h.01M12 12v4"/>',
+  train:'<rect x="3" y="3" width="18" height="14" rx="2"/><path d="M3 9h18M9 3v6M15 3v6M7 17l-2 3M17 17l2 3"/>',
   plane:'<path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 002 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/>',
   zap:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
   truck:'<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
@@ -490,7 +490,7 @@ const ICO={
   water:'<path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/>',
   energy:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
   road:'<path d="M3 17l3-10h12l3 10"/><line x1="12" y1="7" x2="12" y2="17"/><path d="M6 17h12"/>',
-  cow:'<circle cx="12" cy="8" r="3"/><path d="M6 20v-2a6 6 0 0112 0v2"/><path d="M9 11.5c0 0 .5 1.5 3 1.5s3-1.5 3-1.5"/><line x1="8" y1="6" x2="6" y2="4"/><line x1="16" y1="6" x2="18" y2="4"/>',
+  cow:'<ellipse cx="12" cy="12" rx="7" ry="5"/><circle cx="9" cy="11" r="1"/><circle cx="15" cy="11" r="1"/><path d="M9 14s1 1.5 3 1.5 3-1.5 3-1.5"/><path d="M8 7l-2-3M16 7l2-3"/>',
   cloud:'<path d="M18 10h-1.26A8 8 0 109 20h9a5 5 0 000-10z"/>',
   server:'<rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>',
 };
@@ -641,12 +641,14 @@ async function seedIfEmpty(){
 async function loadAll(){
   document.getElementById('lista').innerHTML='<div class="empty"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><div class="empty-txt">Cargando…</div></div>';
   await seedIfEmpty();
-  const[ts,tms,cs]=await Promise.all([getDocs(collection(db,'tareas')),getDocs(collection(db,'temas')),getDocs(collection(db,'comentarios'))]);
+  const[ts,tms,cs,cls]=await Promise.all([getDocs(collection(db,'tareas')),getDocs(collection(db,'temas')),getDocs(collection(db,'comentarios')),getDocs(collection(db,'clientes'))]);
   tareas=ts.docs.map(d=>({...d.data(),id:d.id}));
   temas=tms.docs.map(d=>({...d.data(),id:d.id}));
   comentarios={};
   cs.docs.forEach(d=>{const x=d.data();if(!comentarios[x.temaId])comentarios[x.temaId]=[];comentarios[x.temaId].push({id:d.id,...x})});
   Object.keys(comentarios).forEach(k=>comentarios[k].sort((a,b)=>b.fecha>a.fecha?1:-1));
+  // Load custom clients
+  cls.docs.forEach(d=>{const x=d.data();if(x.nombre)clientes_cfg[x.nombre]={color:x.color,bg:x.bg,icon:x.icon||'building',tipo:x.tipo||'cliente'}});
   updateCounts();render();updateDatalists();
   // initialize toolbar visibility for default tab (todo)
   document.getElementById('toolbar-todo').style.display='flex';
@@ -885,7 +887,7 @@ function renderClientes(lista){
   Object.keys(grupos).forEach(g=>{
     const members=grupos[g].sort();
     if(!members.length)return;
-    html+=`<div class="slbl">${g}<button onclick="abrirNuevoCliente()" style="background:var(--blue-s);border:none;color:var(--blue);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font)">+ Nuevo</button></div><div class="tile-grid">`;
+    html+=`<div class="slbl">${g}</div><div class="tile-grid">`;
     members.forEach(c=>{
       const pend=tareas.filter(t=>t.cliente===c&&!t.done).length;
       const tAb=temas.filter(t=>t.cliente===c&&t.estado!=='cerrado').length;
@@ -897,6 +899,11 @@ function renderClientes(lista){
         <div class="tile-meta">${tAb} tema${tAb!==1?'s':''} abierto${tAb!==1?'s':''}</div>
       </div>`;
     });
+    html+=`<div class="tile" style="--tc:var(--blue);--tb:var(--blue-s);border-style:dashed;box-shadow:none" onclick="abrirNuevoCliente()">
+      <div class="tile-logo" style="background:var(--blue-s)"><svg viewBox="0 0 24 24" style="stroke:var(--blue);width:22px;height:22px;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+      <div class="tile-name" style="color:var(--blue)">Agregar</div>
+      <div class="tile-meta" style="color:var(--blue);opacity:.7">nuevo</div>
+    </div>`;
     html+='</div>';
   });
   if(!html)html='<div class="empty"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><div class="empty-txt">Sin clientes aún.</div></div>';
@@ -1071,11 +1078,13 @@ window.setNcColor=function(el,color,bg){
   document.querySelectorAll('#nc-colors .seg-btn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
 }
-window.guardarCliente=function(){
+window.guardarCliente=async function(){
   const nombre=document.getElementById('nc-nombre').value.trim();
   if(!nombre)return;
-  clientes_cfg[nombre]={color:newClienteColor,bg:newClienteBg,icon:'building',tipo:newClienteTipo};
-  try{localStorage.setItem(KEY_CL,JSON.stringify(Object.fromEntries(Object.entries(clientes_cfg).filter(([k])=>!CLIENT_CFG[k]))))}catch{}
+  const cfg={color:newClienteColor,bg:newClienteBg,icon:'building',tipo:newClienteTipo};
+  clientes_cfg[nombre]=cfg;
+  // Save to Firebase
+  await setDoc(doc(db,'clientes',nombre),{nombre,...cfg});
   cerrarClienteModal();
   document.getElementById('nc-nombre').value='';
   render();
