@@ -485,6 +485,17 @@
         <button class="ec-ico-btn nc-ico-btn" onclick="setEcIcon(this,'🛒')">🛒</button>
       </div>
     </div>
+    <div class="field"><label>Color</label>
+      <div class="seg-btns" id="ec-colors">
+        <button class="seg-btn" onclick="setEcColor(this,'#2563eb','#eff6ff')" style="background:#eff6ff;color:#2563eb">Azul</button>
+        <button class="seg-btn" onclick="setEcColor(this,'#7c3aed','#f5f3ff')" style="background:#f5f3ff;color:#7c3aed">Violeta</button>
+        <button class="seg-btn" onclick="setEcColor(this,'#0891b2','#ecfeff')" style="background:#ecfeff;color:#0891b2">Teal</button>
+        <button class="seg-btn" onclick="setEcColor(this,'#db2777','#fdf2f8')" style="background:#fdf2f8;color:#db2777">Rosa</button>
+        <button class="seg-btn" onclick="setEcColor(this,'#059669','#ecfdf5')" style="background:#ecfdf5;color:#059669">Verde</button>
+        <button class="seg-btn" onclick="setEcColor(this,'#d97706','#fffbeb')" style="background:#fffbeb;color:#d97706">Naranja</button>
+        <button class="seg-btn" onclick="setEcColor(this,'#dc2626','#fef2f2')" style="background:#fef2f2;color:#dc2626">Rojo</button>
+      </div>
+    </div>
     <div class="sheet-btns">
       <button class="btn-cancel" onclick="document.getElementById('overlay-edit-cliente').classList.remove('open')">Cancelar</button>
       <button class="btn-save" onclick="guardarEdicionCliente()">Guardar</button>
@@ -712,7 +723,13 @@ const SEED_TM=[
 let tareas=[],temas=[],comentarios={},clientes_cfg={...CLIENT_CFG};
 let tab='todo',sortMode='fecha',editId=null,currentCliente=null,temaCollapsed={};
 let newClienteTipo='cliente',newClienteColor='#2563eb',newClienteBg='#eff6ff',newClienteIcon='🏢';
-let editClienteEmoji='🏢';
+let editClienteEmoji='🏢',editClienteColor='#2563eb',editClienteBg='#eff6ff';
+
+window.setEcColor=function(el,color,bg){
+  editClienteColor=color;editClienteBg=bg;
+  document.querySelectorAll('#ec-colors .seg-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
 let newTemaEstado='abierto',newTemaCliente=null;
 const KEY_CL='agustina_clientes_v1';
 
@@ -1222,11 +1239,17 @@ window.setNcColor=function(el,color,bg){
 window.editarNombreCliente=function(){
   const cfg=clientes_cfg[currentCliente]||getCfg(currentCliente);
   document.getElementById('edit-nombre').value=currentCliente;
-  // set active emoji in picker
   document.querySelectorAll('.ec-ico-btn').forEach(b=>{
-    b.classList.toggle('active',b.textContent===( cfg.emoji||'🏢'));
+    b.classList.toggle('active',b.textContent===(cfg.emoji||'🏢'));
   });
   editClienteEmoji=cfg.emoji||'🏢';
+  editClienteColor=cfg.color||'#2563eb';
+  editClienteBg=cfg.bg||'#eff6ff';
+  // pre-select color button
+  document.querySelectorAll('#ec-colors .seg-btn').forEach(b=>{
+    const matches=b.style.color===cfg.color||b.getAttribute('onclick')?.includes(cfg.color);
+    b.classList.toggle('active',!!matches);
+  });
   document.getElementById('overlay-edit-cliente').classList.add('open');
 }
 
@@ -1234,7 +1257,7 @@ window.guardarEdicionCliente=async function(){
   const viejo=currentCliente;
   const nuevo=document.getElementById('edit-nombre').value.trim();
   if(!nuevo)return;
-  const cfg={...getCfg(viejo),emoji:editClienteEmoji};
+  const cfg={...getCfg(viejo),emoji:editClienteEmoji,color:editClienteColor,bg:editClienteBg};
 
   // Save config (always, even for built-in clients)
   await setDoc(doc(db,'clientes',nuevo),{nombre:nuevo,...cfg});
