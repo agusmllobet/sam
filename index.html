@@ -886,20 +886,26 @@ async function cargarResumenDia(){
     const data=await r.json();
     if(data.resumen){
       const texto=data.resumen||'';
-      // Format as bullets if has line breaks or sentences
-      const lines=texto.split(/[.!]\s+/).filter(l=>l.trim().length>10);
-      let html=texto;
-      if(lines.length>1){
-        html='<ul style="padding-left:16px;margin:0;display:flex;flex-direction:column;gap:4px">'+lines.map(l=>`<li style="font-size:13px;color:var(--text);line-height:1.4">${l.trim().replace(/^\.+/,'')}</li>`).join('')+'</ul>';
-      }
+      const lines=texto.split('\n').map(l=>l.trim()).filter(l=>l.length>2);
+      let html='';
+      if(lines.length>0){
+        const saludo=lines[0];
+        const bullets=lines.slice(1).filter(l=>l.length>2);
+        html=`<div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">${saludo}</div>`;
+        if(bullets.length>0){
+          html+='<ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px">'+
+            bullets.map(l=>`<li style="font-size:13px;color:var(--text);line-height:1.4;display:flex;gap:4px"><span style="flex-shrink:0">${l.match(/^-\s*/)?'':''}</span><span>${l.replace(/^-\s*/,'')}</span></li>`).join('')+
+          '</ul>';
+        }
+      } else { html=texto; }
       document.getElementById('sam-banner-text').innerHTML=html;
       const stats=data.stats;
       if(stats){
         let html='';
-        if(stats.pendientesAyer>0)html+=`<span class="sam-stat urgente">⏰ ${stats.pendientesAyer} de ayer</span>`;
-        if(stats.vencidas>0)html+=`<span class="sam-stat urgente">🔴 ${stats.vencidas} vencida${stats.vencidas!==1?'s':''}</span>`;
-        if(stats.hoy>0)html+=`<span class="sam-stat">📅 ${stats.hoy} para hoy</span>`;
-        if(stats.bloqueadas>0)html+=`<span class="sam-stat urgente">⚠️ ${stats.bloqueadas} bloqueada${stats.bloqueadas!==1?'s':''}</span>`;
+        if(stats.pendientesAyer>0)html+=`<span class="sam-stat urgente" onclick="irAFoco('hoy')" style="cursor:pointer">⏰ ${stats.pendientesAyer} de ayer</span>`;
+        if(stats.vencidas>0)html+=`<span class="sam-stat urgente" onclick="irAFoco('todos')" style="cursor:pointer">🔴 ${stats.vencidas} vencida${stats.vencidas!==1?'s':''}</span>`;
+        if(stats.hoy>0)html+=`<span class="sam-stat" onclick="irAFoco('hoy')" style="cursor:pointer">🕐 ${stats.hoy} para hoy</span>`;
+        if(stats.bloqueadas>0)html+=`<span class="sam-stat urgente" onclick="irAFiltro('bloqueadas')" style="cursor:pointer">⚠️ ${stats.bloqueadas} bloqueada${stats.bloqueadas!==1?'s':''}</span>`;
         html+=`<span class="sam-stat">📌 ${stats.total} total</span>`;
         document.getElementById('sam-banner-stats').innerHTML=html;
       }
@@ -1135,6 +1141,13 @@ function renderFoco(lista,items){
   lista.innerHTML=html;
 }
 
+window.irAFoco=function(filtro){
+  focoFiltro=filtro;
+  setTab('foco');
+}
+window.irAFiltro=function(tipo){
+  setTab('todo');
+}
 window.setFocoFiltro=function(f){
   focoFiltro=f;
   render();
