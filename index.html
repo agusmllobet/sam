@@ -93,8 +93,8 @@
     .card:hover{box-shadow:var(--shadow-md)}
     .card.urgent{border-left:3px solid var(--red)}
     .card.importante{background:#fffbeb;border-color:rgba(217,119,6,0.25)}
-    .card.sam{background:var(--violet-s);border-color:rgba(124,58,237,0.2)}
-    .task.sam-task{background:var(--violet-s);border-color:rgba(124,58,237,0.2)}
+    .card.sam{background:#f0ebff !important;border-color:#7c3aed !important;border-left:3px solid #7c3aed !important}
+    .task.sam-task{background:#f0ebff !important;border-color:#7c3aed !important;border-left:3px solid #7c3aed !important}
     .card.done{opacity:.4}
     .card.done .card-title{text-decoration:line-through}
     .check{width:20px;height:20px;min-width:20px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px;flex-shrink:0;transition:all .15s}
@@ -930,7 +930,7 @@ function cardHTML(t,showCliente=true){
     <div class="check ${t.done?'done':''}" onclick="toggleDone('${t.id}')">${svg(ICO.check)}</div>
     <div class="card-body">
       <div class="card-title">${t.titulo}</div>
-      <div class="card-chips">${tipoChip(t.tipo)}${clBadge}${tmBadge}${bloqBadge}${dateBadge}${t.propuesto_por==='SAM'?'<span class="chip c-sam">💡 SAM</span>':''}</div>
+      <div class="card-chips">${tipoChip(t.tipo)}${clBadge}${tmBadge}${bloqBadge}${dateBadge}${t.propuesto_por==='SAM'||t.propuesto_por==='sam'?'<span class="chip c-sam">💡 SAM</span>':''}</div>
       ${t.nota?`<div class="card-note">${t.nota}</div>`:''}
       ${t.bloqueo?`<div class="card-blocked" style="${t.bloqueo_resuelto?'opacity:.5;text-decoration:line-through':''}">
         <button onclick="event.stopPropagation();toggleBloqueo('${t.id}')" style="background:${t.bloqueo_resuelto?'var(--green)':'transparent'};border:1.5px solid ${t.bloqueo_resuelto?'var(--green)':'var(--red)'};border-radius:50%;width:16px;height:16px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:4px;font-size:9px;color:${t.bloqueo_resuelto?'#fff':'var(--red)'}">${t.bloqueo_resuelto?'✓':''}</button>
@@ -1172,7 +1172,7 @@ function taskCardHTML(t){
     <div class="check ${t.done?'done':''}" onclick="toggleDone('${t.id}')">${svg(ICO.check)}</div>
     <div class="task-body">
       <div class="task-title">${t.titulo}</div>
-      <div class="task-chips">${tipoChip(t.tipo)}${bloqBadge}${dateBadge}${t.propuesto_por==='SAM'?'<span class="chip c-sam">💡 SAM</span>':''}</div>
+      <div class="task-chips">${tipoChip(t.tipo)}${bloqBadge}${dateBadge}${t.propuesto_por==='SAM'||t.propuesto_por==='sam'?'<span class="chip c-sam">💡 SAM</span>':''}</div>
       ${t.nota?`<div class="task-note">${t.nota}</div>`:''}
       ${t.bloqueo?`<div class="task-blocked" style="${t.bloqueo_resuelto?'opacity:.5;text-decoration:line-through':''}">
         <button onclick="event.stopPropagation();toggleBloqueo('${t.id}')" style="background:${t.bloqueo_resuelto?'var(--green)':'transparent'};border:1.5px solid ${t.bloqueo_resuelto?'var(--green)':'var(--red)'};border-radius:50%;width:16px;height:16px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:4px;font-size:9px;color:${t.bloqueo_resuelto?'#fff':'var(--red)'}">${t.bloqueo_resuelto?'✓':''}</button>
