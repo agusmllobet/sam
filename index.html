@@ -673,7 +673,7 @@ const ICO={
   server:'<rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>',
 };
 
-function svg(paths,extra=''){return`<svg viewBox="0 0 24 24" ${extra}>${paths}</svg>`}
+function svg(paths,extra=''){return`<svg viewBox="0 0 24 24" width="14" height="14" style="flex-shrink:0" ${extra}>${paths}</svg>`}
 function tinyBtn(icon,onclick){return`<button class="tiny" onclick="${onclick}">${svg(ICO[icon])}</button>`}
 
 // ── TIPO CONFIG ──
@@ -1006,7 +1006,7 @@ function cardHTML(t,showCliente=true){
   const dateBadge=dl?`<span class="chip c-date ${dl.cls}">${dl.txt}</span>`:'';
   const clBadge=showCliente&&t.cliente?`<span class="chip c-cl">${t.cliente}</span>`:'';
   const tmBadge=t.tema?`<span class="chip c-otro">${t.tema}</span>`:'';
-  const bloqBadge=t.bloqueo?`<span class="chip c-bloq">${svg(ICO.warn)}Bloqueado</span>`:'';
+  const bloqBadge=t.bloqueo?`<span class="chip c-bloq">⛔ Bloqueado</span>`:'';
   const isUrgent=t.fecha&&t.fecha<=todayStr()&&!t.done;
   const isSam=t.propuesto_por==='SAM'&&!t.done;
   return`<div class="card ${t.done?'done':''} ${isUrgent?'urgent':''} ${t.importante&&!t.done&&!isSam?'importante':''} ${isSam?'sam':''}">
@@ -1017,7 +1017,7 @@ function cardHTML(t,showCliente=true){
       ${t.nota?`<div class="card-note">${t.nota}</div>`:''}
       ${t.bloqueo?`<div class="card-blocked" style="${t.bloqueo_resuelto?'opacity:.5;text-decoration:line-through':''}">
         <button onclick="event.stopPropagation();toggleBloqueo('${t.id}')" style="background:${t.bloqueo_resuelto?'var(--green)':'transparent'};border:1.5px solid ${t.bloqueo_resuelto?'var(--green)':'var(--red)'};border-radius:50%;width:16px;height:16px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:4px;font-size:9px;color:${t.bloqueo_resuelto?'#fff':'var(--red)'}">${t.bloqueo_resuelto?'✓':''}</button>
-        ${svg(ICO.warn)}${t.bloqueo}
+        ⛔ ${t.bloqueo}
       </div>`:''}
     </div>
     <div class="card-acts">
@@ -1098,7 +1098,7 @@ function renderAgenda(lista,items){
         <div class="ag-body">
           ${i===0?`<div class="ag-dow">${esHoy?'Hoy':dow}</div>`:''}
           <div class="ag-title">${t.titulo}</div>
-          <div class="ag-chips">${tipoChip(t.tipo)}${t.cliente?`<span class="chip c-cl">${t.cliente}</span>`:''}${t.bloqueo?`<span class="chip c-bloq">${svg(ICO.warn)}</span>`:''}</div>
+          <div class="ag-chips">${tipoChip(t.tipo)}${t.cliente?`<span class="chip c-cl">${t.cliente}</span>`:''}${t.bloqueo?`<span class="chip c-bloq">⛔</span>`:''}</div>
           <button class="ag-comment-btn" onclick="toggleAgComment('${t.id}')">${svg(ICO.comment)}Agregar update</button>
           <div class="ag-comment-box" id="agcb-${t.id}">
             <input class="ag-comment-input" id="agci-${t.id}" placeholder="¿Cómo fue? ¿Qué quedó pendiente?…" onkeydown="if(event.key==='Enter'){saveAgComment('${t.id}',this.value);this.value=''}"/>
@@ -1249,7 +1249,7 @@ function temaCardHTML(tema,todasTareas){
 function taskCardHTML(t){
   const dl=dateLabel(t.fecha);
   const dateBadge=dl?`<span class="chip c-date ${dl.cls}">${dl.txt}</span>`:'';
-  const bloqBadge=t.bloqueo?`<span class="chip c-bloq">${svg(ICO.warn)}</span>`:'';
+  const bloqBadge=t.bloqueo?`<span class="chip c-bloq">⛔</span>`:'';
   const isUrgent=t.fecha&&t.fecha<=todayStr()&&!t.done;
   const isSam=t.propuesto_por==='SAM'&&!t.done;
   const ts=isSam?'background:#f0ebff;border-color:#7c3aed;border-left:3px solid #7c3aed':t.importante&&!t.done?'background:#fffbeb;border-color:rgba(217,119,6,0.25)':'';
@@ -1261,7 +1261,7 @@ function taskCardHTML(t){
       ${t.nota?`<div class="task-note">${t.nota}</div>`:''}
       ${t.bloqueo?`<div class="task-blocked" style="${t.bloqueo_resuelto?'opacity:.5;text-decoration:line-through':''}">
         <button onclick="event.stopPropagation();toggleBloqueo('${t.id}')" style="background:${t.bloqueo_resuelto?'var(--green)':'transparent'};border:1.5px solid ${t.bloqueo_resuelto?'var(--green)':'var(--red)'};border-radius:50%;width:16px;height:16px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:4px;font-size:9px;color:${t.bloqueo_resuelto?'#fff':'var(--red)'}">${t.bloqueo_resuelto?'✓':''}</button>
-        ${svg(ICO.warn)}${t.bloqueo}
+        ⛔ ${t.bloqueo}
       </div>`:''}
     </div>
     <div class="task-acts">
