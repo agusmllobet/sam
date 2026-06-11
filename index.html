@@ -902,10 +902,10 @@ async function cargarResumenDia(){
       const stats=data.stats;
       if(stats){
         let html='';
-        if(stats.pendientesAyer>0)html+=`<span class="sam-stat urgente" onclick="irAFoco('hoy')" style="cursor:pointer">⏰ ${stats.pendientesAyer} de ayer</span>`;
-        if(stats.vencidas>0)html+=`<span class="sam-stat urgente" onclick="irAFoco('todos')" style="cursor:pointer">🔴 ${stats.vencidas} vencida${stats.vencidas!==1?'s':''}</span>`;
-        if(stats.hoy>0)html+=`<span class="sam-stat" onclick="irAFoco('hoy')" style="cursor:pointer">🕐 ${stats.hoy} para hoy</span>`;
-        if(stats.bloqueadas>0)html+=`<span class="sam-stat urgente" onclick="irAFiltro('bloqueadas')" style="cursor:pointer">⚠️ ${stats.bloqueadas} bloqueada${stats.bloqueadas!==1?'s':''}</span>`;
+        if(stats.pendientesAyer>0)html+=`<span class="sam-stat urgente" onclick="cerrarYNavegar(()=>irAFoco('hoy'))" style="cursor:pointer">⏰ ${stats.pendientesAyer} de ayer</span>`;
+        if(stats.vencidas>0)html+=`<span class="sam-stat urgente" onclick="cerrarYNavegar(()=>irAFoco('todos'))" style="cursor:pointer">🔴 ${stats.vencidas} vencida${stats.vencidas!==1?'s':''}</span>`;
+        if(stats.hoy>0)html+=`<span class="sam-stat" onclick="cerrarYNavegar(()=>irAFoco('hoy'))" style="cursor:pointer">🕐 ${stats.hoy} para hoy</span>`;
+        if(stats.bloqueadas>0)html+=`<span class="sam-stat urgente" onclick="cerrarYNavegar(()=>setTab('todo'))" style="cursor:pointer">⚠️ ${stats.bloqueadas} bloqueada${stats.bloqueadas!==1?'s':''}</span>`;
         html+=`<span class="sam-stat">📌 ${stats.total} total</span>`;
         document.getElementById('sam-banner-stats').innerHTML=html;
       }
@@ -985,6 +985,23 @@ window.borrarComentario=async function(id,temaId){
   if(comentarios[temaId])comentarios[temaId]=comentarios[temaId].filter(c=>c.id!==id);
   renderDetail(currentCliente);
 }
+// Event delegation para bitácora - evita pérdida de foco al re-render
+document.addEventListener('keydown', function(e){
+  if(e.key==='Enter' && e.target.classList.contains('comment-input')){
+    e.preventDefault();
+    const temaId=e.target.dataset.temaId;
+    const val=e.target.value;
+    if(temaId && val.trim()) addComment(temaId, val).then(()=>{e.target.value='';});
+  }
+});
+document.addEventListener('click', function(e){
+  if(e.target.classList.contains('comment-btn') && e.target.dataset.temaId){
+    const temaId=e.target.dataset.temaId;
+    const input=document.querySelector(`.comment-input[data-tema-id="${temaId}"]`);
+    if(input && input.value.trim()) addComment(temaId, input.value).then(()=>{input.value='';});
+  }
+});
+
 window.addComment=async function(temaId,texto){
   if(!texto.trim())return;
   const id=Date.now().toString();
@@ -1141,6 +1158,20 @@ function renderFoco(lista,items){
   lista.innerHTML=html;
 }
 
+window.cerrarYNavegar=function(fn){
+  // Cerrar el banner SAM primero
+  const banner=document.getElementById('sam-banner');
+  const arrow=document.getElementById('sam-toggle-arrow');
+  const label=document.getElementById('sam-toggle-label');
+  const btn=document.getElementById('sam-toggle-btn');
+  if(banner && banner.style.display!=='none'){
+    banner.style.display='none';
+    if(btn){btn.style.borderBottomLeftRadius='';btn.style.borderBottomRightRadius='';}
+    if(arrow)arrow.textContent='▼';
+    if(label)label.textContent='Ver resumen del día';
+  }
+  fn();
+}
 window.irAFoco=function(filtro){
   focoFiltro=filtro;
   setTab('foco');
@@ -1349,7 +1380,7 @@ function temaCardHTML(tema,todasTareas){
       <div class="bit-section">
         <div class="bit-label">Bitácora</div>
         ${coms.map(c=>`<div class="bit-entry"><div class="bit-dot"></div><div style="flex:1"><div class="bit-text">${c.texto}</div><div class="bit-date">${formatFecha(c.fecha)}</div></div><button onclick="borrarComentario('${c.id}','${tema.id}')" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:2px 4px;flex-shrink:0">🗑</button></div>`).join('')}
-        ${tema.estado!=='cerrado'?`<div class="add-comment"><input class="comment-input" id="ci-${tema.id}" placeholder="Agregar update…" onkeydown="if(event.key==='Enter'){addComment('${tema.id}',this.value).then(()=>this.value='')}"/><button class="comment-btn" onclick="const el=document.getElementById('ci-${tema.id}');addComment('${tema.id}',el.value).then(()=>el.value='')">OK</button></div>`:''}
+        ${tema.estado!=='cerrado'?`<div class="add-comment"><input class="comment-input" id="ci-${tema.id}" placeholder="Agregar update…" data-tema-id="${tema.id}"/><button class="comment-btn" data-tema-id="${tema.id}">OK</button></div>`:''}
       </div>
       <div class="tema-actions">
         ${tema.estado==='abierto'?`<button class="tema-btn" onclick="cambiarEstadoTema('${tema.id}','encurso')">→ En curso</button>`:''}
