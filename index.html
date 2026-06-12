@@ -1302,7 +1302,7 @@ function renderClientes(lista){
     ...temas.map(t=>t.cliente),
     ...Object.keys(clientes_cfg)
   ].filter(Boolean));
-  const todos=[...todosSet].sort((a,b)=>a.localeCompare(b,'es'));
+  const todos=[...todosSet].sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase(),'es'));
   const grupos={Clientes:[],Partners:[],Interno:[]};
   todos.forEach(c=>{
     const cfg=getCfg(c);
