@@ -77,19 +77,18 @@
     /* TILE GRID */
     .tile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px}
     .tile{
-      background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);
-      padding:16px 14px 14px;cursor:pointer;transition:box-shadow .15s,transform .1s;
-      display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden;min-height:120px;
+      background:var(--tb,var(--blue-s));border:none;border-radius:var(--r-lg);
+      padding:14px 14px 14px;cursor:pointer;transition:box-shadow .15s,transform .1s;
+      display:flex;flex-direction:column;gap:8px;position:relative;overflow:hidden;
       box-shadow:var(--shadow);
     }
     .tile:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
-    .tile::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--tc,var(--blue))}
-    .tile-icon{width:40px;height:40px;border-radius:10px;background:var(--tb,var(--blue-s));display:flex;align-items:center;justify-content:center}
-    .tile-icon svg{width:20px;height:20px;stroke:var(--tc,var(--blue));fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-    .tile-icon img{width:28px;height:28px;object-fit:contain}
-    .tile-name{font-size:13px;font-weight:600;color:var(--text);line-height:1.2;margin-top:auto}
+    .tile::after{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--tc,var(--blue))}
+    .tile-icon{font-size:22px;display:flex;align-items:center;justify-content:center;width:28px;height:28px}
+    .tile-name{font-size:13px;font-weight:700;color:var(--text);line-height:1.2}
     .tile-meta{font-size:11px;color:var(--text2)}
     .tile-badge{position:absolute;top:12px;right:12px;background:var(--tc,var(--blue));color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;min-width:20px;text-align:center}
+    .tile-header{display:flex;align-items:center;gap:8px;margin-top:6px}
 
     /* CARD */
     .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px 14px;margin-bottom:8px;display:flex;gap:11px;align-items:flex-start;box-shadow:var(--shadow);transition:box-shadow .15s}
@@ -1321,8 +1320,10 @@ function renderClientes(lista){
       const isCustom=!CLIENT_CFG[c]; // only show delete for custom clients
       html+=`<div class="tile" style="--tc:${cfg.color};--tb:${cfg.bg}" onclick="abrirCliente('${c}')">
         ${pend?`<div class="tile-badge">${pend}</div>`:''}
-        ${tileIcon(c)}
-        <div class="tile-name">${c}</div>
+        <div class="tile-header">
+          <div class="tile-icon">${cfg.emoji||'🏢'}</div>
+          <div class="tile-name">${c}</div>
+        </div>
         <div class="tile-meta">${tAb} tema${tAb!==1?'s':''} abierto${tAb!==1?'s':''}</div>
         ${isCustom?`<button onclick="event.stopPropagation();eliminarCliente('${c}')" style="position:absolute;bottom:8px;right:8px;background:var(--red-s);border:none;border-radius:6px;color:var(--red);width:24px;height:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px">🗑</button>`:''}
       </div>`;
