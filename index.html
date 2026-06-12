@@ -90,6 +90,8 @@
     .tile-badge{position:absolute;top:12px;right:12px;background:var(--tc,var(--blue));color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;min-width:20px;text-align:center}
     .tile-header{display:flex;align-items:center;gap:8px;margin-top:6px}
 
+    .card.hoy-card{background:repeating-linear-gradient(0deg,transparent,transparent 19px,rgba(186,230,253,0.4) 19px,rgba(186,230,253,0.4) 20px),repeating-linear-gradient(90deg,transparent,transparent 19px,rgba(186,230,253,0.4) 19px,rgba(186,230,253,0.4) 20px);border-color:rgba(14,165,233,0.25)}
+    .task.hoy-task{background:repeating-linear-gradient(0deg,transparent,transparent 19px,rgba(186,230,253,0.4) 19px,rgba(186,230,253,0.4) 20px),repeating-linear-gradient(90deg,transparent,transparent 19px,rgba(186,230,253,0.4) 19px,rgba(186,230,253,0.4) 20px);border-color:rgba(14,165,233,0.25)}
     /* CARD */
     .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:13px 14px;margin-bottom:8px;display:flex;gap:11px;align-items:flex-start;box-shadow:var(--shadow);transition:box-shadow .15s}
     .card:hover{box-shadow:var(--shadow-md)}
@@ -1089,7 +1091,8 @@ function cardHTML(t,showCliente=true){
   const isUrgent=t.fecha&&t.fecha<=todayStr()&&!t.done;
   const isSam=t.propuesto_por==='SAM'&&!t.done;
   const cfg=getCfg(t.cliente||'');
-  return`<div class="card ${t.done?'done':''} ${isUrgent?'urgent':''} ${t.importante&&!t.done&&!isSam?'importante':''} ${isSam?'sam':''}">
+  const isFechaHoy=t.fecha===todayStr()&&!t.done;
+  return`<div class="card ${t.done?'done':''} ${isUrgent&&!isFechaHoy?'urgent':''} ${t.importante&&!t.done&&!isSam?'importante':''} ${isSam?'sam':''} ${isFechaHoy?'hoy-card':''}">
     <div class="check ${t.done?'done':''}" onclick="toggleDone('${t.id}')">${svg(ICO.check)}</div>
     <div class="card-body">
       <div class="card-title ${t.hoy&&!t.done?'hoy-highlight':''}">${t.titulo}</div>
@@ -1448,7 +1451,8 @@ function taskCardHTML(t){
   const isUrgent=t.fecha&&t.fecha<=todayStr()&&!t.done;
   const isSam=t.propuesto_por==='SAM'&&!t.done;
   const ts=isSam?'background:#f0ebff;border-color:#7c3aed;border-left:3px solid #7c3aed':t.importante&&!t.done?'background:#fffbeb;border-color:rgba(217,119,6,0.25)':'';
-  return`<div class="task ${t.done?'done-task':''} ${isUrgent?'urgent':''}" style="${ts}">
+  const isFechaHoyT=t.fecha===todayStr()&&!t.done;
+  return`<div class="task ${t.done?'done-task':''} ${isUrgent&&!isFechaHoyT?'urgent':''} ${isFechaHoyT?'hoy-task':''}" style="${ts}">
     <div class="check ${t.done?'done':''}" onclick="toggleDone('${t.id}')">${svg(ICO.check)}</div>
     <div class="task-body">
       <div class="task-title ${t.hoy&&!t.done?'hoy-highlight':''}">${t.titulo}</div>
