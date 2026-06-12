@@ -1022,9 +1022,18 @@ function updateCounts(){
 function updateDatalists(){
   const cl=[...new Set(tareas.map(t=>t.cliente).filter(Boolean))].sort();
   document.getElementById('cl-list').innerHTML=cl.map(c=>`<option value="${c}">`).join('');
-  const tm=[...new Set(tareas.map(t=>t.tema).filter(Boolean))].sort();
+  fillTemaList();
+}
+function fillTemaList(clienteFiltro){
+  const c=clienteFiltro||document.getElementById('f-cliente')?.value?.trim();
+  const tm=c
+    ?[...new Set(temas.filter(t=>t.cliente===c).map(t=>t.nombre).filter(Boolean))].sort()
+    :[...new Set(temas.map(t=>t.nombre).filter(Boolean))].sort();
   document.getElementById('tema-list').innerHTML=tm.map(t=>`<option value="${t}">`).join('');
 }
+document.addEventListener('input',function(e){
+  if(e.target.id==='f-cliente')fillTemaList(e.target.value.trim());
+});
 function dateLabel(f){
   if(!f)return null;
   const hoy=todayStr();
