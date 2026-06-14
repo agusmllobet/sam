@@ -1910,65 +1910,94 @@ let samHistorial = [];
 
 // Micrófono con Web Speech API
 let samRecognition = null;
+let samMediaRecorder = null;
+let samAudioChunks = [];
 let samGrabando = false;
 
-window.toggleMicSAM = function() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  
-  // En iOS: activar dictado nativo enfocando el input con atributo especial
-  const isIOS = /iPhone|iPad/i.test(navigator.userAgent);
+const isIOS = /iPhone|iPad/i.test(navigator.userAgent);
+
+window.toggleMicSAM = async function() {
   if (isIOS) {
-    const input = document.getElementById('sam-chat-input');
-    input.focus();
-    // El teclado de iOS tiene un botón de dictado nativo (micrófono en el teclado)
-    // Solo hacemos foco y mostramos un hint
-    const msgs = document.getElementById('sam-chat-messages');
-    const hint = msgs.querySelector('.ios-hint');
-    if (!hint) {
-      const d = document.createElement('div');
-      d.className = 'sam-msg bot ios-hint';
-      d.textContent = '💡 En iPhone: usá el micrófono del teclado (botón 🎙️ abajo a la izquierda del teclado)';
-      msgs.appendChild(d);
-      msgs.scrollTop = msgs.scrollHeight;
+    // iOS: grabar con MediaRecorder y transcribir con Groq
+    if (samGrabando) {
+      samMediaRecorder && samMediaRecorder.stop();
+      return;
     }
-    return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4'
+        : MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg';
+      samAudioChunks = [];
+      samMediaRecorder = new MediaRecorder(stream, { mimeType });
+      samMediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) samAudioChunks.push(e.data); };
+      samMediaRecorder.onstop = async () => {
+        samGrabando = false;
+        document.getElementById('sam-mic-btn').classList.remove('grabando');
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(samAudioChunks, { type: mimeType });
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64 = reader.result.split(',')[1];
+          const msgs = document.getElementById('sam-chat-messages');
+          const userDiv = document.createElement('div');
+          userDiv.className = 'sam-msg user';
+          userDiv.textContent = '🎙️ Procesando...';
+          msgs.appendChild(userDiv);
+          const loadDiv = document.createElement('div');
+          loadDiv.className = 'sam-msg bot loading';
+          loadDiv.textContent = 'Transcribiendo...';
+          msgs.appendChild(loadDiv);
+          msgs.scrollTop = msgs.scrollHeight;
+          try {
+            const res = await fetch('https://vtyahpzfbtgcfubegxad.supabase.co/functions/v1/sam-chat', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ audioBase64: base64, audioMime: mimeType, historial: samHistorial.slice(-10) })
+            });
+            const data = await res.json();
+            loadDiv.classList.remove('loading');
+            loadDiv.textContent = data.respuesta || data.error || 'Error.';
+            if (data.asistente) samHistorial.push(data.asistente);
+            if (data.resultados && data.resultados.length > 0) { await loadAll(); updateCounts(); render(); }
+          } catch(e) {
+            loadDiv.classList.remove('loading');
+            loadDiv.textContent = 'Error de conexión.';
+          }
+          msgs.scrollTop = msgs.scrollHeight;
+        };
+        reader.readAsDataURL(blob);
+      };
+      samMediaRecorder.start();
+      samGrabando = true;
+      document.getElementById('sam-mic-btn').classList.add('grabando');
+    } catch(e) {
+      alert('No se pudo acceder al micrófono: ' + e.message);
+    }
+  } else {
+    // Desktop: Web Speech API
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert('Usá Chrome para reconocimiento de voz.'); return; }
+    if (samGrabando) {
+      samRecognition && samRecognition.stop();
+      samGrabando = false;
+      document.getElementById('sam-mic-btn').classList.remove('grabando');
+      return;
+    }
+    samRecognition = new SR();
+    samRecognition.lang = 'es-AR';
+    samRecognition.continuous = false;
+    samRecognition.interimResults = false;
+    samRecognition.onstart = () => { samGrabando = true; document.getElementById('sam-mic-btn').classList.add('grabando'); };
+    samRecognition.onresult = (e) => { document.getElementById('sam-chat-input').value = e.results[e.results.length-1][0].transcript; };
+    samRecognition.onend = () => {
+      samGrabando = false;
+      document.getElementById('sam-mic-btn').classList.remove('grabando');
+      const val = document.getElementById('sam-chat-input').value.trim();
+      if (val) setTimeout(()=>enviarSamChat(), 100);
+    };
+    samRecognition.onerror = () => { samGrabando = false; document.getElementById('sam-mic-btn').classList.remove('grabando'); };
+    samRecognition.start();
   }
-
-  if (!SR) {
-    alert('Tu browser no soporta reconocimiento de voz. Usá Chrome.');
-    return;
-  }
-
-  if (samGrabando) {
-    samRecognition && samRecognition.stop();
-    samGrabando = false;
-    document.getElementById('sam-mic-btn').classList.remove('grabando');
-    return;
-  }
-
-  samRecognition = new SR();
-  samRecognition.lang = 'es-AR';
-  samRecognition.continuous = false;
-  samRecognition.interimResults = false;
-
-  samRecognition.onstart = () => {
-    samGrabando = true;
-    document.getElementById('sam-mic-btn').classList.add('grabando');
-  };
-  samRecognition.onresult = (e) => {
-    document.getElementById('sam-chat-input').value = e.results[e.results.length-1][0].transcript;
-  };
-  samRecognition.onend = () => {
-    samGrabando = false;
-    document.getElementById('sam-mic-btn').classList.remove('grabando');
-    const val = document.getElementById('sam-chat-input').value.trim();
-    if (val) setTimeout(()=>enviarSamChat(), 100);
-  };
-  samRecognition.onerror = () => {
-    samGrabando = false;
-    document.getElementById('sam-mic-btn').classList.remove('grabando');
-  };
-  samRecognition.start();
 }
 
 window.abrirSamChat = function() {
