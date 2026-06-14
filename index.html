@@ -1908,43 +1908,59 @@ if(window.PublicKeyCredential){
 <script>
 let samHistorial = [];
 
-// Micrófono con Web Speech API (nativo, sin costo)
+// Micrófono con Web Speech API
 let samRecognition = null;
 let samGrabando = false;
 
 window.toggleMicSAM = function() {
-  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-    alert('Tu browser no soporta reconocimiento de voz. Usá Chrome o Safari.');
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    alert('Tu browser no soporta reconocimiento de voz.');
     return;
   }
+
   if (samGrabando) {
     samRecognition && samRecognition.stop();
+    samGrabando = false;
+    document.getElementById('sam-mic-btn').classList.remove('grabando');
     return;
   }
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  // Crear nueva instancia cada vez (necesario en iOS)
   samRecognition = new SR();
   samRecognition.lang = 'es-AR';
   samRecognition.continuous = false;
   samRecognition.interimResults = false;
+  samRecognition.maxAlternatives = 1;
 
   samRecognition.onstart = function() {
     samGrabando = true;
     document.getElementById('sam-mic-btn').classList.add('grabando');
   };
+
   samRecognition.onresult = function(e) {
-    const texto = e.results[0][0].transcript;
+    const texto = e.results[e.results.length - 1][0].transcript;
     document.getElementById('sam-chat-input').value = texto;
-    enviarSamChat();
   };
-  samRecognition.onerror = function() {
-    samGrabando = false;
-    document.getElementById('sam-mic-btn').classList.remove('grabando');
-  };
+
   samRecognition.onend = function() {
     samGrabando = false;
     document.getElementById('sam-mic-btn').classList.remove('grabando');
+    const val = document.getElementById('sam-chat-input').value.trim();
+    if (val) setTimeout(()=>enviarSamChat(), 100);
   };
-  samRecognition.start();
+
+  samRecognition.onerror = function(e) {
+    samGrabando = false;
+    document.getElementById('sam-mic-btn').classList.remove('grabando');
+    if (e.error !== 'no-speech') console.log('Speech error:', e.error);
+  };
+
+  try {
+    samRecognition.start();
+  } catch(e) {
+    console.log('Speech start error:', e);
+  }
 }
 
 window.abrirSamChat = function() {
